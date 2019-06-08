@@ -2,11 +2,12 @@ var CMD = require('node-cmd');
 function onClick() {
   fetchDirs().then(dirs => {
     renderAccount(dirs)
+    console.log(process.platform)
   })
 }
 
 function onUseButton(dir) {
-  console.log(dir)
+  useAccount(dir).then(r => console.log(r)).catch(err => console.log(err))
 }
 
 const renderAccount = (dirs) => {
@@ -33,11 +34,29 @@ const fetchDirs = () => {
   return new Promise(resp => {
     get(cmd).then(res => {
       let resultRows = res.split('\n').slice(3, res.split('\n').length - 1).map(r => r.split(' '))
-      let dirs = resultRows.filter(row => row[0] === 'drwxrwxr-x').map(r => r[r.length - 1])
+      let pattern =  '';
+      if (process.platform === 'darwin') {
+        pattern = 'drwxr-xr-x'
+      } else {
+        pattern = 'drwxrwxr-x'
+      }
+      let dirs = resultRows.filter(row => row[0] === pattern).map(r => r[r.length - 1])
       return resp(dirs)
     })
   })
 }
+
+const useAccount = (name) => new Promise((resp, rej) => {
+  get(`cp ~/.ssh/${name}/* ~/.ssh/`).then(res => {
+    console.log(res)
+    return get('ssh-add')
+  }).then(res => {
+    console.log(res)
+    return get('git config --global -l')
+  }).then(res => {
+    console.log(res)
+  })
+})
 
 const run = command => new Promise(r => {
   CMD.run(command)
