@@ -52,7 +52,7 @@ const useAccount = (name) => new Promise((resp, rej) => {
     return get('ssh-add')
   }).then(res => {
     console.log(res)
-    return get('git config --global -l')
+    return get(`git config --global user.email "${name}"`)
   }).then(res => {
     console.log(res)
   })
