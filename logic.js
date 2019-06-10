@@ -1,18 +1,37 @@
 var CMD = require('node-cmd');
+var fs = require('fs');
+var axios = require('axios');
+var currentAccount;
+function onInit() {
+  fsRead().then(res => {
+    currentAccount = res.currentAccount
+    onClick()
+  }).catch(err => {
+    console.log(err)
+  })
+}
+
 function onClick() {
   fetchDirs().then(dirs => {
     renderAccount(dirs)
-    console.log(process.platform)
   })
 }
 
 function onUseButton(dir) {
-  useAccount(dir).then(r => console.log(r)).catch(err => console.log(err))
+  useAccount(dir).then(r => {
+    currentAccount = dir
+    onClick()
+  }).catch(err => console.log(err))
 }
 
 const renderAccount = (dirs) => {
   let div = document.createElement('div')
   dirs.map(dirName => {
+
+    if (dirName === currentAccount) {
+      dirName = dirName + '<b> SELECTED </b>'
+    }
+
     let row = document.createElement('div')
     let button = document.createElement('button')
     let name = document.createElement('div')
@@ -48,14 +67,12 @@ const fetchDirs = () => {
 
 const useAccount = (name) => new Promise((resp, rej) => {
   get(`cp ~/.ssh/${name}/* ~/.ssh/`).then(res => {
-    console.log(res)
     return get('ssh-add')
   }).then(res => {
-    console.log(res)
     return get(`git config --global user.email "${name}"`)
   }).then(res => {
-    console.log(res)
-  })
+    return fsWrite({currentAccount: name})
+  }).then(() => resp(true)).catch(err => rej(err))
 })
 
 const run = command => new Promise(r => {
@@ -69,3 +86,19 @@ const get = command => new Promise((resp, rej) => {
     resp(data)
   })
 })
+
+const fsWrite = json => new Promise((resp, rej) => {
+  fs.writeFile('config.json', JSON.stringify(json), 'utf-8', (e, r) => {
+    if(e) return rej(e)
+    resp(r)
+  })
+})
+
+const fsRead = () => new Promise((resp, rej) => {
+  fs.readFile('config.json', 'utf-8', (e, r) => {
+    if (e) return rej(e)
+    resp(JSON.parse(r))
+  })
+})
+
+onInit()
