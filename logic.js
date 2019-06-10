@@ -11,6 +11,7 @@ function onInit() {
   })
 }
 
+
 function onClick() {
   fetchDirs().then(dirs => {
     renderAccount(dirs)
