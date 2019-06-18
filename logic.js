@@ -54,7 +54,6 @@ const addFolder = (name, email) => {
   })
 }
 
-
 const generateKey = (name, email) => {
   keygen({
     location: `./id_rsa`,
