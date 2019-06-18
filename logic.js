@@ -25,6 +25,37 @@ function onUseButton(dir) {
   }).catch(err => console.log(err))
 }
 
+function onAdd() {
+  let inputs = document.getElementsByTagName('input')
+  // console.log(inputs)
+  let email = inputs[0].value
+  let name = inputs[1].value
+  addFolder(name, email)
+  inputs[0].value = ''
+  inputs[1].value = ''
+}
+
+const addFolder = (name, email) => {
+  get(`cd ~/.ssh && mkdir ${email}`).then(res => {
+    onClick()
+    generateKey(name, email)
+  })
+}
+
+const generateKey = (name, email) => {
+  get('rm -rf ~/.ssh/id_rsa && rm -rf ~/.ssh/id_rsa.pub').then(() => {
+    get(`ssh-keygen -t rsa -b 4096 -C "${email}" -f id_rsa -q -N ""`).then(res => {
+      console.log(res)
+      get(`cp ~/.ssh/id_rsa ~/.ssh/${email}/ && cp ~/.ssh/id_rsa.pub ~/.ssh/${email}/`).then(() => {
+        get(`cat ~/.ssh/${email}/id_rsa.pub`).then(res => {
+          console.log('yay', res)
+        })
+      })
+    })
+  })
+
+}
+
 const renderAccount = (dirs) => {
   let div = document.createElement('div')
   dirs.map(dirName => {
@@ -83,7 +114,7 @@ const run = command => new Promise(r => {
 
 const get = command => new Promise((resp, rej) => {
   CMD.get(command, (err, data, stderr) => {
-    if (err) return resj(err)
+    if (err) return rej(err)
     resp(data)
   })
 })
