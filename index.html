@@ -7,11 +7,14 @@
   <body>
 
     <button onclick="onClick()">Sinchronize</button>
-    <div style="margin-top: 20px">
-      <button onClick="onAdd()">Add New</button>
+    <button onclick="showAdd()">new</button>
+    <div style="margin-top: 20px;display:none;" id="addSection">
       <input type="text" placeholder="Account Email">
       <input type="text" placeholder="Account Name">
+      <button onClick="onAdd()">Add New</button>
+      <textarea name="name" rows="8" cols="50" id="result"></textarea>
     </div>
+    <button type="button" onclick="hideAdd()" style="display:none" id="hide-button">close</button>
     <h1>Accounts:</h1>
     <div id="accounts"></div>
     <div id="root"></div>

@@ -1,6 +1,7 @@
 var CMD = require('node-cmd');
 var fs = require('fs');
 var axios = require('axios');
+var keygen = require('ssh-keygen');
 var currentAccount;
 function onInit() {
   fsRead().then(res => {
@@ -35,6 +36,17 @@ function onAdd() {
   inputs[1].value = ''
 }
 
+function showAdd() {
+  document.getElementById('addSection').style.display = 'block'
+  document.getElementById('hide-button').style.display = 'block'
+}
+
+function hideAdd() {
+  document.getElementById('result').innerHTML = ''
+  document.getElementById('addSection').style.display = 'none'
+  document.getElementById('hide-button').style.display = 'none'
+}
+
 const addFolder = (name, email) => {
   get(`cd ~/.ssh && mkdir ${email}`).then(res => {
     onClick()
@@ -43,14 +55,15 @@ const addFolder = (name, email) => {
 }
 
 const generateKey = (name, email) => {
-  get('rm -rf ~/.ssh/id_rsa && rm -rf ~/.ssh/id_rsa.pub').then(() => {
-    get(`ssh-keygen -t rsa -b 4096 -C "${email}" -f id_rsa -q -N ""`).then(res => {
-      console.log(res)
-      get(`cp ~/.ssh/id_rsa ~/.ssh/${email}/ && cp ~/.ssh/id_rsa.pub ~/.ssh/${email}/`).then(() => {
-        get(`cat ~/.ssh/${email}/id_rsa.pub`).then(res => {
-          console.log('yay', res)
-        })
-      })
+  keygen({
+    location: `./id_rsa`,
+    comment: email,
+    read: true,
+    password: false
+  }, (err, out) => {
+    console.log(out)
+    document.getElementById('result').innerHTML = out.pubKey
+    get(`cp ./id_rsa ~/.ssh/${email}/ && cp ./id_rsa.pub ~/.ssh/${email}/`).then(() => {
     })
   })
 
